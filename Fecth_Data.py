@@ -37,11 +37,9 @@ def fetch(json,match,feature,feature_chall,feature_teams):
 
 def getgame(elo,api_key): 
 
-    headers = [{
-        "X-Riot-Token": api_key[0]
-    },{
-        "X-Riot-Token": api_key[1]
-    }]
+    headers = {
+        "X-Riot-Token": api_key
+    }
     region = 'euw1'
     request=0
     request_=0
@@ -51,7 +49,8 @@ def getgame(elo,api_key):
         url = f"https://euw1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/{elo}/{div}"
         for k in range(1,4):
             try :
-                joueurs = requests.get(url+f"?page={k}", headers=headers[0]).json()
+                joueurs = requests.get(url+f"?page={k}", headers=headers).json()
+                print(joueurs)
                 request+=1
             except Exception as e  :
                 print(f"error : {e}")
@@ -63,7 +62,7 @@ def getgame(elo,api_key):
     for joueur in joueurs :
         if request<99 :
             try :
-                game=requests.get(f'https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{joueur["puuid"]}/ids?start=0&count=15',headers=headers[0]).json()
+                game=requests.get(f'https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{joueur["puuid"]}/ids?start=0&count=15',headers=headers).json()
                 print(game)
                 games+=game
                 request+=1
@@ -101,11 +100,9 @@ def database(matches,donnees):
 
 
 def getmatchs(games,api_key,elo,donnees):
-    headers = [{
-        "X-Riot-Token": api_key[0]
-    },{
-        "X-Riot-Token": api_key[1]
-    }]
+    headers = {
+        "X-Riot-Token": api_key
+    }
 
     region = 'euw1'
     feature=['puuid','championId',"deaths","kills","damageDealtToObjectives","damageDealtToBuildings","magicDamageDealt","magicDamageTaken","physicalDamageDealt","physicalDamageTaken",
@@ -122,7 +119,7 @@ def getmatchs(games,api_key,elo,donnees):
     for x in games:
         if request<99 :
             try :
-                matchs= fetch(requests.get(f'https://europe.api.riotgames.com/lol/match/v5/matches/{x}',headers=headers[0]).json(),matchs,feature,feature_chall,feature_teams)
+                matchs= fetch(requests.get(f'https://europe.api.riotgames.com/lol/match/v5/matches/{x}',headers=headers).json(),matchs,feature,feature_chall,feature_teams)
                 request+=1
 
             except Exception as e  :
@@ -137,13 +134,15 @@ def getmatchs(games,api_key,elo,donnees):
     matchs.to_csv(f"matchesID_{elo}.csv", index=False)
     database(matchs,donnees)
 
-    return "finished"
 
 
 
 with open('server.json', 'r', encoding='utf-8') as fichier :
     donnees = json.load(fichier)
-api_key = ['RGAPI-687c461e-3a20-4c87-a6cd-b9c50a8f2829','RGAPI-bbb6ae30-5405-4a77-9779-97c6ef6c8139']
+
+with open('api_key.json', 'r', encoding='utf-8') as fichier :
+    api_key = json.load(fichier)["api_key"]
+
 
 elo = "DIAMOND"
 file_path = f"gamesID_{elo}.csv"
