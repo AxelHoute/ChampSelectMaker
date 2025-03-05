@@ -3,6 +3,7 @@ import requests
 import time
 from sqlalchemy import create_engine
 import os
+import json
 
 def fetch(json,match,feature,feature_chall,feature_teams):
     try :
@@ -79,9 +80,9 @@ def getgame(elo,api_key):
 
 
 
-def database(matches):
-    USER = "postgres"
-    PASSWORD = "AxelHoute94"
+def database(matches,donnees):
+    USER = donnees["USER"]
+    PASSWORD = donnees["PASSWORD"]
     HOST = "localhost"  # ou une adresse IP distante
     PORT = "5432"
     DB_NAME = "Champ_selectbdd"
@@ -99,7 +100,7 @@ def database(matches):
 
 
 
-def getmatchs(games,api_key,elo):
+def getmatchs(games,api_key,elo,donnees):
     headers = [{
         "X-Riot-Token": api_key[0]
     },{
@@ -134,13 +135,14 @@ def getmatchs(games,api_key,elo):
     matchs["elo"]=elo
 
     matchs.to_csv(f"matchesID_{elo}.csv", index=False)
-    database(matchs)
+    database(matchs,donnees)
 
     return "finished"
 
 
 
-
+with open('server.json', 'r', encoding='utf-8') as fichier :
+    donnees = json.load(fichier)
 api_key = ['RGAPI-687c461e-3a20-4c87-a6cd-b9c50a8f2829','RGAPI-bbb6ae30-5405-4a77-9779-97c6ef6c8139']
 
 elo = "DIAMOND"
@@ -153,4 +155,4 @@ else :
     time.sleep(120)
 
 
-getmatchs(games,api_key,elo)
+getmatchs(games,api_key,elo,donnees)
